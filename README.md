@@ -2,8 +2,7 @@
 
 ## TODOs
 
-### Models & Tests (5)
-- Disease
+### Models & Tests (4)
 - City
 - Player
 
