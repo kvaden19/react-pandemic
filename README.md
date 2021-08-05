@@ -2,7 +2,7 @@
 
 ## TODOs
 
-### Models & Tests (4)
+### Models & Tests (3)
 - City
 - Player
 
@@ -11,6 +11,7 @@
 - Gameplay
 
 ### Style Components (5)
+- Map overlaps footer on laptop screen
 
 ### Other (3)
 - Design Map
