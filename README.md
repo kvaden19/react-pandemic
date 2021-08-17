@@ -2,14 +2,12 @@
 
 ## TODOs
 
-### React Proof-of-Concept (1)
-- Can you render a model and its attributes as a React component?
-
-### Gameplay Functions (6)
+### Gameplay Functions (5)
 - Setup
 - Gameplay
 
-### Style Components (5)
+### Render & Style Components (5)
+- On launch, New Game button should show INSTEAD of player cards
 - Map overlaps footer on laptop screen
 
 ### Other (4)

@@ -1,3 +1,4 @@
+// TODO: Add markerColor property
 function Player(playerName) {
     this.playerName = playerName;
     this.hand = [];
