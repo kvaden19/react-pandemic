@@ -3,7 +3,6 @@
 ## TODOs
 
 ### Gameplay Functions (4)
-- Static Setup (1)
 - Gameplay (3)
 
 ### Render & Style Components (5)

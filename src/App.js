@@ -10,6 +10,8 @@ import Map from './components/Map';
 import Counter from './components/Counter';
 import DiseaseStatus from './components/DiseaseStatus';
 const Player = require('../src/components/Player/Player');
+const City = require('../src/components/City/City');
+const Disease = require('../src/components/Disease/Disease');
 
 class App extends Component {
   state = {
@@ -22,6 +24,15 @@ class App extends Component {
     playerName: '',
     playerColor: '',
     totalEpidemics: 5,
+    masterCities: [],
+    infectionDeck: [],
+    infectionDiscard: [],
+    playerDeck: [],
+    playerDiscard: [],
+    blackDisease: '',
+    blueDisease: '',
+    redDisease: '',
+    yellowDisease: ''
   };
 
   // Opens Total Player (e.g., how many players?) Modal on "New Game" click.
@@ -39,7 +50,8 @@ class App extends Component {
   // Sets the startingHand (#) based on totalPlayers. Triggers the Indiv Player (e.g., player name and color) Modal.
   handleTotalPlayerSubmit(e) {
     e.preventDefault();
-    let cards = 6 - this.state.totalPlayers;
+    // let cards = 6 - this.state.totalPlayers;
+    let cards = 0;
     this.setState({ startingHand: cards });
     this.setState({ indivPlayerModal: true });
   }
@@ -85,27 +97,79 @@ class App extends Component {
   }
 
   setup() {
+    // Set up Cities - good
+    this.state.masterCities.push(new City('Atlanta', 'blue', ['Chicago', 'Washington', 'Miami'], 110000));
+    this.state.masterCities.push(new City('Washington', 'blue', ['New York', 'Montreal', 'Atlanta'], 120000));
+    this.state.masterCities.push(new City('New York', 'blue', ['Montreal', 'Washington'], 130000));
+    this.state.masterCities.push(new City('Montreal', 'blue', ['New York', 'Washington', 'Chicago'], 140000));
+    this.state.masterCities.push(new City('Chicago', 'blue', ['Montreal', 'Atlanta', 'Mexico City', 'Los Angeles', 'San Francisco'], 150000));
+    this.state.masterCities.push(new City('San Francisco', 'blue', ['Chicago', 'Los Angeles'], 160000));
+    this.state.masterCities.push(new City('Miami', 'yellow', ['Mexico City', 'Atlanta', 'Washington'], 170000));
+    this.state.masterCities.push(new City('Mexico City', 'yellow', ['Miami', 'Chicago', 'Los Angeles'], 180000));
+    this.state.masterCities.push(new City('Los Angeles', 'yellow', ['Mexico City', 'Chicago', 'San Francisco'], 190000));
+
+    // Put research station in Atlanta - good
+    this.state.masterCities[0].addStation();
+
+    // Set up Diseases - good
+    this.state.blackDisease = new Disease('black');
+    this.state.blueDisease = new Disease('blue');
+    this.state.redDisease = new Disease('red');
+    this.state.yellowDisease = new Disease('yellow');
+
+    // Create decks and shuffle them - good
+    // this.state.masterCities.sort((a,b) => b.population - a.population);
+    this.state.infectionDeck = JSON.parse(JSON.stringify(this.state.masterCities));
+    this.state.infectionDeck.sort(() => Math.random()-0.5);
+    this.state.playerDeck = JSON.parse(JSON.stringify(this.state.masterCities));
+    this.state.playerDeck.sort(() => Math.random()-0.5);
+      
+    // Infect initial cities - good
+    for (let i=3; i>0; i--) {
+      for (let j=3; j>0; j--) {
+        let card = this.state.infectionDeck.pop();
+        this.state.infectionDiscard.push(card);
+        // grab the index (n) of the element in masterCities with this name
+        const n = this.state.masterCities.findIndex(city => city.cityName === card.cityName);
+        this.state.masterCities[n].addDisease(card.color, i);
+      }
+    }
+
+    // Deal each PLayer their starting hand - good
+    for (let p of this.state.players) {
+      for (let i=this.state.startingHand; i>0; i--) {
+        let card = this.state.playerDeck.pop();
+        p.hand.push(card);
+      }
+    }
+
+    // Shuffle in Epidemic cards - good
+    // TODO: Hard-coded for 5 epidemics. How to generalize?
+    const index = Math.ceil(this.state.playerDeck.length / 5);
+
+    const deck_one = this.state.playerDeck.splice(-index);
+    const deck_two = this.state.playerDeck.splice(-index);
+    const deck_three = this.state.playerDeck.splice(-index);
+    const deck_four = this.state.playerDeck.splice(-index);
+    const deck_five = this.state.playerDeck;
+
+    deck_one.push(new City('Epidemic', '', [], 0));
+    deck_two.push(new City('Epidemic', '', [], 0));
+    deck_three.push(new City('Epidemic', '', [], 0));
+    deck_four.push(new City('Epidemic', '', [], 0));
+    deck_five.push(new City('Epidemic', '', [], 0));
+
+    deck_one.sort(() => Math.random()-0.5);
+    deck_two.sort(() => Math.random()-0.5);
+    deck_three.sort(() => Math.random()-0.5);
+    deck_four.sort(() => Math.random()-0.5);
+    deck_five.sort(() => Math.random()-0.5);
+    
+    this.state.playerDeck = [];
+    this.state.playerDeck.push(...deck_one, ...deck_two, ...deck_three, ...deck_four, ...deck_five);
+
+    // Close the modal(s)
     this.onCloseModal();
-    // Game setup (1)
-    // Construct all City objects (just do NA to start)
-        // Set atlanta.research == true
-        // Set all player.locations to atlanta
-    // Set up 4 disease objects
-        // Colors red, blue, yellow, black
-        // Cured and Eradicated set to false
-        // Cubes = 96
-    // Push all City objects onto masterCities array; rank by population
-        // let infectionDeck = a copy of masterCities
-        // let playerCards = copy of masterCities
-        // randomize both
-    // for (3, 2, 1):
-        // pop off 3 items from infectionCards; add to infectionDiscard
-        // add # disease cubes to each
-    // pop startingHand number of strings off playerCards and onto player.hand
-    // shuffle in Epidemic cards
-        // divide playerCards into difficulty # of subarrays
-        // push one 'epidemic' string onto each array and randomize
-        // combine subarrays
   }
 
   // This will only get hit if the user X's out of modal
