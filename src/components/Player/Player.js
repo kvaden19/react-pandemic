@@ -23,7 +23,7 @@ Player.prototype.addCard = function(card) {
 };
 
 Player.prototype.removeCard = function(card) {
-    let cardIndex = this.hand.indexOf(card);
+    const cardIndex = this.hand.findIndex(item => item === card);
     this.hand.splice(cardIndex, 1);
 };
 

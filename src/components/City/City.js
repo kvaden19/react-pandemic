@@ -27,6 +27,8 @@ City.prototype.addDisease = function(color, value) {
 };
 
 City.prototype.subtractDisease = function(color, value) {
+    console.log('In subtractDisease with color ', color, ' and value ', value);
+    console.log(this.diseaseCubes);
     this.diseaseCubes[color] -= value;
 };
 
