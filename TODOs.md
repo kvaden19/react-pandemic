@@ -2,31 +2,24 @@
 
 ## TODOs
 
-### Architecture Notes
-    - There should only be ONE copy of each City OBJECT
-    - The Infection Deck and Player Decks should be lists of the city names
-    - When City method calls are needed, use the cityName to reference the object in masterCities
-    - const n = this.state.masterCities.findIndex(city => city.cityName === card);
-
-### Render & Style Components (6)
-- Make Header prettier
-- On launch, New Game button should show INSTEAD of player cards
-- PlayerStatus should show playerName and markerColor
-- Make PlayerStatus prettier
-- One Counter should show Infection count
-- One Counter should show Outbreak count
-- Make Counters prettier
-- DiseaseStatus should show disease cured and eradicated
+### Render & Style Components & Test (4)
 - Make DiseaseStatus prettier
+    - DiseaseStatus should show disease cured and eradicated
 - Make Footer prettier
 - Make Warning prettier
-- Action Modal will need to sit at top of screen so player can see board
+- Write turn alert modal
+- Write card-draw modal
+- Write cards-in-hand component
+- Player Card should have a button to show hand
+- Refactor UI: Action menus should become dropdowns off Player Card
+
+https://flatuicolors.com/palette/ca
 
 ### Design Map (2)
-- Design Map
+- Design Map (inc city markers, player markers, disease markers)
 - Map overlaps footer on laptop screen
 
-### Initialize Everything (2)
+### Initialize Everything (1)
 - Initialize cities
 
 ********** MVP Complete **********
@@ -36,10 +29,11 @@
 - Check for eradicated disease and implications
 - Check for player hand > 7 and implications
 - Allow destination selection by clicking map rather than entering name
+- Some things may need to get refactored with promises. Seems like state variable updates aren't as fast relative to other code.
+- Infection rate isn't quite right. Needs to be an array of [2, 2, 3, 3, 3, 4] or something
 
 ### Cosmetic Stuff
-- Add markerColor to player object (during init and in object constructor itself)
-- Player Info:
+- Player Setup:
     - Show color instead of text
     - Wipe form between players
     - Colors should pop off the options array once chosen

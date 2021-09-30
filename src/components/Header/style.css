@@ -1,6 +1,13 @@
 .header {
     margin-left: 2%;
     margin-right: 2%;
-    margin-bottom: 2%;
+    /* margin-bottom: 2%; */
     width: 96%;
 }
+
+h1 {
+    font-size: 72px;
+    font-weight: 600;
+    color: #ee5253;
+    text-shadow: 8px 0px 4px #feca57
+  }

@@ -15,6 +15,7 @@ const Disease = require('../src/components/Disease/Disease');
 
 class App extends Component {
   state = {
+    gameStarted: false,
     totalPlayerModal: false,
     indivPlayerModal: false,
     epiModal: false,
@@ -22,6 +23,8 @@ class App extends Component {
     transitModal: false,
     shareModal: false,
     diseaseModal: false,
+    playerInput: false,
+    playerActions: 3,   // <---- TODO: Action loop fires one more time than it should. 
     players: [],
     playerIndex: 0,
     totalPlayers: 2,
@@ -111,11 +114,13 @@ class App extends Component {
   }
 
   setup() {
+    this.setState({ gameStarted: true });
+
     // For Testing Only, hardcode players
-    let player1 = new Player('Kai');
-    let player2 = new Player('Emily');
+    let player1 = new Player('Kai', 'green');
+    let player2 = new Player('Emily', 'blue');
     this.state.players.push(player1, player2);
-    // console.log('Players: ', this.state.players);
+    console.log('Players: ', this.state.players);
 
     // Set up Cities
     this.state.masterCities.push(new City('Atlanta', 'blue', ['Chicago', 'Washington', 'Miami'], 110000));
@@ -127,13 +132,12 @@ class App extends Component {
     this.state.masterCities.push(new City('Miami', 'yellow', ['Mexico City', 'Atlanta', 'Washington'], 170000));
     this.state.masterCities.push(new City('Mexico City', 'yellow', ['Miami', 'Chicago', 'Los Angeles'], 180000));
     this.state.masterCities.push(new City('Los Angeles', 'yellow', ['Mexico City', 'Chicago', 'San Francisco'], 190000));
-    // console.log('Master Cities: ', this.state.masterCities);
+    console.log('Master Cities: ', this.state.masterCities);
 
     // Put research station in Atlanta
     // this.state.masterCities[0].addStation(); -- skip for testing
     player1.location = 'Atlanta';
     player2.location = 'Atlanta';
-    // console.log('Players with location: ', this.state.players);
 
     // Set up Diseases
     this.setState({blackDisease : new Disease('black')});
@@ -142,49 +146,55 @@ class App extends Component {
     this.setState({yellowDisease : new Disease('yellow')});
 
     // Create "decks" - lists of cityNames representing the City objects
+    let infectionDummy = [];
+    let infectionDiscDummy = [];
+    let playerDummy = [];
+
     for (let city of this.state.masterCities) {
       let name = city.cityName;
-      this.state.playerDeck.push(name);
-      this.state.infectionDeck.push(name);
+      playerDummy.push(name);
+      infectionDummy.push(name);
     }
 
     // Randomize the "decks"
-    this.state.infectionDeck.sort(() => Math.random()-0.5);
-    this.state.playerDeck.sort(() => Math.random()-0.5);
+    infectionDummy.sort(() => Math.random()-0.5);
+    playerDummy.sort(() => Math.random()-0.5);
     // console.log('Infection Deck: ', this.state.infectionDeck);
     // console.log('Player Deck: ', this.state.playerDeck);
       
-    // Infect initial cities
-    for (let i=3; i>0; i--) {
-      for (let j=3; j>0; j--) {
-        let card = this.state.infectionDeck.pop();
-        this.state.infectionDiscard.push(card);
+    // Infect initial cities. TODO: Change back to 3 after testing.
+    for (let i=2; i>0; i--) {
+      for (let j=2; j>0; j--) {
+        let card = infectionDummy.pop();
+        infectionDiscDummy.push(card);
         // grab the index (n) of the element in masterCities with this name
         const n = this.state.masterCities.findIndex(city => city.cityName === card);
         let color = this.state.masterCities[n].color;
         this.state.masterCities[n].addDisease(color, i);
       }
     }
-    // console.log('Cities after infection: ', this.state.masterCities);
+    console.log('Cities after infection: ', this.state.masterCities);
+    this.setState({ infectionDeck: infectionDummy });
+    this.setState({ infectionDiscard: infectionDiscDummy });
 
-    // Deal each PLayer their starting hand
+    // Deal each Player their starting hand. TODO: Change back to this.state.startingHand after testing.
     for (let p of this.state.players) {
-      for (let i=this.state.startingHand; i>0; i--) {
-        let card = this.state.playerDeck.pop();
+      for (let i=2; i>0; i--) {
+        let card = playerDummy.pop();
         p.hand.push(card);
       }
     }
-    // console.log('Players after dealing: ', this.state.players);
+    console.log('Players after dealing: ', this.state.players);
 
     // Shuffle in Epidemic cards
     // TODO: Hard-coded for 5 epidemics. Need to generalize
     const index = Math.ceil(this.state.playerDeck.length / 5);
 
-    const deck_one = this.state.playerDeck.splice(-index);
-    const deck_two = this.state.playerDeck.splice(-index);
-    const deck_three = this.state.playerDeck.splice(-index);
-    const deck_four = this.state.playerDeck.splice(-index);
-    const deck_five = this.state.playerDeck;
+    const deck_one = playerDummy.splice(-index);
+    const deck_two = playerDummy.splice(-index);
+    const deck_three = playerDummy.splice(-index);
+    const deck_four = playerDummy.splice(-index);
+    const deck_five = playerDummy;
 
     deck_one.push('Epidemic');
     deck_two.push('Epidemic');
@@ -198,9 +208,10 @@ class App extends Component {
     deck_four.sort(() => Math.random()-0.5);
     deck_five.sort(() => Math.random()-0.5);
     
-    this.setState({playerDeck : []});
-    this.state.playerDeck.push(...deck_one, ...deck_two, ...deck_three, ...deck_four, ...deck_five);
-    // console.log('Deck after adding Epis: ', this.state.playerDeck);
+    playerDummy = [];
+    playerDummy.push(...deck_one, ...deck_two, ...deck_three, ...deck_four, ...deck_five);
+    this.setState({ playerDeck: playerDummy });
+    console.log('Deck after adding Epis: ', this.state.playerDeck);
 
     // Determine player order
     let playerPops = {};
@@ -216,22 +227,38 @@ class App extends Component {
     }
 
     this.state.players.sort(function(a, b) { return playerPops[b.playerName] - playerPops[a.playerName] });
-    // console.log('Player order: ', this.state.players);
+    console.log('Player order: ', this.state.players);
+
+    // Close all the modal(s)
+    this.setState({ totalPlayerModal: false });
+    this.setState({ indivPlayerModal: false });
+    this.setState({ epiModal: false });
 
     // Trigger gameplay
-    this.gameplay();
+    console.log('Startup finished');
   }
 
   // For testing only: Clicking the New Game button will trigger this function and run setup
   testRun() {
     this.setup();
 
-    console.log('Players, pre action:');
-    for (let player of this.state.players) {
-      console.log(player);
-    }
-    
-    this.gameplay();
+    // Give time for setup to run before starting gameplay
+    setTimeout(() => {
+      console.log('Gameplay triggered');
+      console.log('Checking on player Deck: ', this.state.playerDeck);
+      console.log('Checking on infection deck: ', this.state.infectionDeck);
+      console.log('Checking on master cities: ', this.state.masterCities);
+      console.log('Checking on another state var: ', this.state.redDisease);
+
+      // Set active player
+      let activePlayer = this.state.players[this.state.playerIndex];
+      console.log('Active Player: ', activePlayer);
+      const x = this.state.masterCities.findIndex(city => city.cityName === activePlayer.location);
+      console.log('Active PlayerLocation: ', this.state.masterCities[x]);
+  
+      // Kick off first action -- TODO: For component design this is disabled
+      // this.startActionFlow();
+    }, 1000);
   }
 
   onOpenActionModal() {
@@ -258,6 +285,7 @@ class App extends Component {
         const n = this.state.masterCities.findIndex(city => city.cityName === this.state.players[this.state.playerIndex].location);
         this.state.masterCities[n].addStation();
         console.log('Active Location Post: ', this.state.masterCities[n]);
+        this.endActionFlow();
         break;
       case 'Share':
         this.setState({ shareModal: true });
@@ -285,7 +313,7 @@ class App extends Component {
     e.preventDefault();
     this.state.players[this.state.playerIndex].move(this.state.currentDestination);
     console.log('Post: ', this.state.players[this.state.playerIndex]);
-    this.setState({ transitModal: false });
+    this.endActionFlow();
   }
 
   handleSharePlayerChange(e) {
@@ -315,7 +343,7 @@ class App extends Component {
     }
     // console.log('Post: ', this.state.players[this.state.playerIndex]);
     // console.log('Post: ', this.state.players[n]);
-    this.setState({ shareModal: false });
+    this.endActionFlow();
   }
 
   handleDiseaseChange(e) {
@@ -347,79 +375,125 @@ class App extends Component {
       let cityRef = this.state.players[this.state.playerIndex].location;
       const n = this.state.masterCities.findIndex(city => city.cityName === cityRef);
       this.state.masterCities[n].subtractDisease(this.state.currentDisease, 1);
-      this.setState({ diseaseModal: false });
       console.log('Active Location Post: ', this.state.masterCities[n]);
+      this.endActionFlow();
     }
 
     if (this.state.currentAction === 'Cure') {
       targetDisease.cure(); 
-      this.setState({ diseaseModal: false });
       console.log('Disease Post', targetDisease);
+      this.endActionFlow();
     }
   }
 
-  gameplay() {
-    // Close all the modal(s)
+  startActionFlow() {
+    this.setState({ actionModal: true });
+    console.log('Action loop');
+  }
+
+  // TODO: Refactor into Promises
+  // decrementActions() {
+  //   decActions = new Promise((res, rej) => {
+  //     this.setState({ playerActions: this.state.playerActions - 1 });
+  //     console.log('Player Actions state variable: ', this.state.playerActions);
+  //     let numActions = parseInt(this.state.playerActions);
+  //     res(numActions);
+  //   });
+
+  // turnFlow(numActions) {
+  //   console.log(numActions);
+  //   if (numActions > 0) {
+  //     // this.startActionFlow();
+  //     console.log('Actions remaining');
+  //   } else {
+  //     // this.drawCards();
+  //     console.log('Actions done.');
+  //   }
+  // }
+
+  endActionFlow() {
+    // Make sure ALL modals are closed
     this.setState({ totalPlayerModal: false });
     this.setState({ indivPlayerModal: false });
     this.setState({ epiModal: false });
+    this.setState({ actionModal: false });
+    this.setState({ transitModal: false });
+    this.setState({ shareModal: false });
+    this.setState({ diseaseModal: false });
 
-    while (this.state.outbreaks < 8 && this.state.blackDisease.cubes > 0 && this.state.blueDisease.cubes > 0 && this.state.redDisease.cubes > 0 && this.state.yellowDisease.cubes > 0 && this.state.playerDeck.length > 0 &&
-      !(this.state.blackDisease.cured && this.state.blueDisease.cured && this.state.redDisease.cured && this.state.yellowDisease.cured)) 
-    {
-      //Set active player
-      let activePlayer = this.state.players[this.state.playerIndex];
-      console.log('Active Player: ', activePlayer);
-      const x = this.state.masterCities.findIndex(city => city.cityName === activePlayer.location);
-      console.log('Active PlayerLocation: ', this.state.masterCities[x]);
-      // Do this 4 times:
-      for (; activePlayer.actions > 0; activePlayer.actions--) {
-        this.setState({ actionModal: true });
-      }
-      // "Deal" 2 cards from Player Deck
-      for (let i=2; i>0; i--) {
-        let card = this.state.playerDeck.pop();
-        if (card === 'Epidemic') {
-          console.log('EPIDEMIC');
-          let epiCity = this.state.infectionDeck.shift();
-          console.log('Target city...', epiCity);
-          const y = this.state.masterCities.findIndex(city => city.cityName === epiCity);
-          let color = this.state.masterCities[y].color;
-          this.state.masterCities[y].addDisease(color, 3);
-          console.log('Target city post: ', this.state.masterCities[y]);
-          this.setState({ infectionRate: this.state.infectionRate + 1 });
-          console.log('Infection rate is now ', this.state.infectionRate);
-          this.state.infectionDiscard.sort(() => Math.random()-0.5);
-          this.state.infectionDeck.push(...this.state.infectionDiscard);
-          this.setState({ infectionDiscard: [] });
-          console.log('Infection Deck is now ', this.state.infectionDeck);
-          console.log('Infection Discard is now ', this.state.infectionDiscard);
-        } 
-        else { activePlayer.hand.push(card);
-               console.log('Player hand is now...', activePlayer.hand); }
-      }
-      // "Infect" number of cities equal to state.infectionRate
-      for (let i = this.state.infectionRate; i>0; i--) {
-        let card = this.state.infectionDeck.pop();
-        this.state.infectionDiscard.push(card);
-        // grab the index (n) of the element in masterCities with this name
-        const z = this.state.masterCities.findIndex(city => city.cityName === card);
-        let color = this.state.masterCities[z].color;
-        this.state.masterCities[z].addDisease(color, 1);
-        console.log('City infected: ', this.state.masterCities[z]);
-      }
-      // Increment playerIndex
-      if (this.state.playerIndex === this.state.players - 1) {
-        this.setState({ playerIndex: 0 });
-      } else { this.setState({ playerIndex: this.state.playerIndex + 1 }) }
+    //this.decrementActions.then((res) => this.turnFlow(res));
+
+    // Decrement player actions
+    this.setState({ playerActions: this.state.playerActions - 1 });
+
+    // Flow
+    if (this.state.playerActions > 0) {
+      this.startActionFlow();
+    } else {
+      this.drawCards();
     }
-      
-    this.winOrLoss();
   }
 
-  winOrLoss() {
-    if (this.state.blackDisease.cured && this.state.blueDisease.cured && this.state.redDisease.cured && this.state.yellowDisease.cured) {this.setState({ winner:true });
-      } else {this.setState({ loser:true }) }
+  drawCards() {
+    console.log('Time to draw cards!');
+    console.log('Player Deck: ', this.state.playerDeck);
+    // "Deal" 2 cards from Player Deck
+    for (let i=2; i>0; i--) {
+      let card = this.state.playerDeck.pop();
+      if (card === 'Epidemic') {
+        console.log('EPIDEMIC');
+        let epiCity = this.state.infectionDeck.shift();
+        console.log('Target city...', epiCity);
+        const y = this.state.masterCities.findIndex(city => city.cityName === epiCity);
+        let color = this.state.masterCities[y].color;
+        this.state.masterCities[y].addDisease(color, 3);
+        console.log('Target city post: ', this.state.masterCities[y]);
+        this.setState({ infectionRate: this.state.infectionRate + 1 });
+        console.log('Infection rate is now ', this.state.infectionRate);
+        this.state.infectionDiscard.sort(() => Math.random()-0.5);
+        this.state.infectionDeck.push(...this.state.infectionDiscard);
+        this.setState({ infectionDiscard: [] });
+        console.log('Infection Deck is now ', this.state.infectionDeck);
+        console.log('Infection Discard is now ', this.state.infectionDiscard);
+      } 
+      else { 
+        this.state.players[this.state.playerIndex].hand.push(card);
+      }
+      console.log('Player hand is now...', this.state.players[this.state.playerIndex].hand); 
+    }
+
+    // "Infect" number of cities equal to state.infectionRate
+    console.log('Infection Deck: ', this.state.infectionDeck);
+    for (let i = this.state.infectionRate; i>0; i--) {
+      let card = this.state.infectionDeck.pop();
+      this.state.infectionDiscard.push(card);
+      // grab the index (n) of the element in masterCities with this name
+      const z = this.state.masterCities.findIndex(city => city.cityName === card);
+      console.log(card, z, this.state.masterCities[z]);
+      let color = this.state.masterCities[z].color;
+      this.state.masterCities[z].addDisease(color, 1);
+      console.log('City infected: ', this.state.masterCities[z]);
+    }
+
+    this.checkGameEnd();
+  }
+
+  checkGameEnd() {
+    if (this.state.blackDisease.cured && this.state.blueDisease.cured && this.state.redDisease.cured && this.state.yellowDisease.cured) 
+    {this.setState({ winner:true }) } 
+    else if (this.state.outbreaks > 8 || this.state.blackDisease.cubes <= 0 || this.state.blueDisease.cubes <= 0 || this.state.redDisease.cubes <= 0 || this.state.yellowDisease.cubes <= 0 || this.state.playerDeck.length <= 0)
+    {this.setState({ loser:true }) }
+    else 
+    {this.incrementActivePlayer()}
+  }
+
+  incrementActivePlayer() {
+    if (this.state.playerIndex === this.state.players - 1) {
+      this.setState({ playerIndex: 0 });
+    } 
+    else { this.setState({ playerIndex: this.state.playerIndex + 1 }) }
+
+    this.startActionFlow();
   }
 
   // This will only get hit if the user X's out of modal
@@ -431,10 +505,10 @@ class App extends Component {
 
   render() {
     return (
-      <div className='App w-screen h-screen bg-blue-800'>
+      <div className='App w-screen h-screen'>
         <Header />
         {/* After testing, change back to onOpenTotalPlayerModal */}
-        <div className='start box-border m-auto w-1/6 p-4 text-center text-white border-white border-2 bg-red-800'><button onClick={ this.testRun.bind(this) }>Start</button></div>
+        {!this.state.gameStarted && <div className='start box-border m-auto w-1/6 p-4 text-center text-white border-white border-2 bg-red-800'><button onClick={ this.testRun.bind(this) }>Start Game</button></div>}
         <Modal id='totalPlayer' open={this.state.totalPlayerModal} onClose={this.onCloseModal.bind(this)} center classNames={{ overlay: 'customOverlay', modal: 'customModal' }}>
             <h2 className='mb-4'>Okay, let's play! How many players?</h2>
             <div className="input-field col s12">
@@ -544,15 +618,16 @@ class App extends Component {
         <Warning />
         </div>
         <div className='player-wrapper desktop flex flex-row'>
-          <PlayerStatus />
-          <PlayerStatus />
-          <PlayerStatus />
+          {this.state.players.length>3 && <PlayerStatus name={this.state.players[3].playerName} color={this.state.players[3].playerColor}/>}
+          {this.state.players.length>2 && <PlayerStatus name={this.state.players[2].playerName} color={this.state.players[2].playerColor}/>}
+          {this.state.players.length>1 && <PlayerStatus name={this.state.players[1].playerName} color={this.state.players[1].playerColor}/>}
+          {this.state.players.length>0 && <PlayerStatus name={this.state.players[0].playerName} color={this.state.players[0].playerColor}/>}
         </div>
         <div className='center-content desktop'>
           <div className='left-side float-left'>
             <div className='disease-wrapper flex flex-col'>
-              <Counter />
-              <Counter />
+              <Counter counterName='Infection Rate' value={this.state.infectionRate}/>
+              <Counter counterName='Outbreaks' value={this.state.outbreaks}/>
               <DiseaseStatus />
             </div>
           </div>

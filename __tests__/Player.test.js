@@ -3,8 +3,9 @@ const Player = require('../src/components/Player/Player');
 describe('Player Class', () => {
     describe('initialization', () => {
         test('should create an object ... if provided valid arguments', () => {
-            let player = new Player(playerName='Kai');
+            let player = new Player(playerName='Kai', playerColor='green');
             expect(player.playerName).toEqual('Kai');
+            expect(player.playerColor).toEqual('green');
             expect(player.hand).toEqual([]);
             expect(player.location).toEqual('Atlanta');
             expect(player.actions).toEqual(4);

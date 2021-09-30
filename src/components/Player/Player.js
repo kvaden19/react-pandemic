@@ -1,6 +1,7 @@
 // TODO: Add markerColor property
-function Player(playerName) {
+function Player(playerName, playerColor) {
     this.playerName = playerName;
+    this.playerColor = playerColor;
     this.hand = [];
     this.location = 'Atlanta';
     this.actions = 4;

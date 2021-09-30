@@ -4,8 +4,12 @@
     font-family: 'Nunito Sans', 'Noto Sans', Roboto, sans-serif;
 }
 
+.App {
+    background-color: #341f97
+}
+
 .left-side {
-    margin-top: 150px; /* make room for card drop-down */
+    margin-top: 5%;
     margin-left: 2%;
     margin-right: 2%;
     width: 16%;

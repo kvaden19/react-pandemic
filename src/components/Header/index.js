@@ -3,7 +3,7 @@ import './style.css';
 
 function Header() {
     return (
-    <div className='header box-border p-4 text-center text-3xl md:text-7xl text-white border-white border-2'>
+    <div className='header box-border p-4 text-center text-5xl md:text-7xl neon'>
         <h1>PANDEMIC</h1>
     </div>
     );

@@ -1,9 +1,9 @@
 import React from 'react';
 
-function Counter() {
+function Counter(props) {
   return (
-    <div className='counter box-border p-4 mt-4 text-center text-white border-white border-2'>
-        <p>Infections: 2</p>
+    <div className='box-border p-4 mt-4 text-center bg-yellow-50 rounded-md'>
+        <p><span className='font-bold'>{props.counterName}:</span> {props.value}</p>
     </div>
     );
 }
